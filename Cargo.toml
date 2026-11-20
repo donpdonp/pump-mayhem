@@ -1,0 +1,9 @@
+[package]
+name = "hello"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+rust-yaml = "1.1.0"
+solana-client = "4.4.1"
+url = "2.5.8"
