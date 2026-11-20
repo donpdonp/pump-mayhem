@@ -2,6 +2,7 @@ use fast_websocket_client::WebSocket;
 use rust_yaml;
 use solana_client::transaction_executor;
 use std::{fs, net::SocketAddr};
+use tokio::sync::mpsc;
 
 mod pumpdev;
 
@@ -25,6 +26,7 @@ fn main() {
 async fn iomain(url: &str) -> Result<(), fast_websocket_client::WebSocketClientError> {
     let ws = WebSocket::new(url).await?;
     println!("iomain {}", url);
+    let (tx, mut rx) = mpsc::unbounded_channel::<pumpdev::PumpSend>();
 
     ws.on_open(|_| async move {
         println!("[OPEN] WebSocket connection opened.");
@@ -39,28 +41,37 @@ async fn iomain(url: &str) -> Result<(), fast_websocket_client::WebSocketClientE
     })
     .await;
 
-    ws.on_message(|message| async move {
-        println!("[MESSAGE] {} ", message);
-        let msg: pumpdev::PumpMsg = serde_json::from_str(&message).unwrap();
-        match msg {
-            pumpdev::PumpMsg::Connected(msg) => {
-                println!("{:?}", msg)
-            }
-            pumpdev::PumpMsg::Subscribed(msg) => {
-                println!("{:?}", msg)
-            }
-            pumpdev::PumpMsg::ConnectionStatus(m) => {
-                println!("{:?}", m);
-                if m.connected {
-                    let sub_msg = pumpdev::PumpMsgSub {
-                        method: "bob".to_owned(),
-                    };
-                    let json = serde_json::to_string(&sub_msg).unwrap();
+    let msg_tx = tx.clone();
+    ws.on_message(move |message| {
+        let tx = msg_tx.clone();
+        async move {
+            println!("[MESSAGE] {} ", message);
+            let msg: pumpdev::PumpMsg = serde_json::from_str(&message).unwrap();
+            match msg {
+                pumpdev::PumpMsg::Connected(msg) => {
+                    println!("{:?}", msg)
+                }
+                pumpdev::PumpMsg::Subscribed(msg) => {
+                    println!("{:?}", msg)
+                }
+                pumpdev::PumpMsg::ConnectionStatus(m) => {
+                    println!("{:?}", m);
+                    if m.connected {
+                        let sub_msg = pumpdev::SubscribeNewToken {};
+                        tx.send(pumpdev::PumpSend::SubscribeNewToken(sub_msg))
+                            .unwrap();
+                    }
                 }
             }
         }
     })
     .await;
+
+    while let Some(pmsg) = rx.recv().await {
+        let json = serde_json::to_string(&pmsg).unwrap();
+        println!("[SEND] {}", json);
+        ws.send(&json).await.unwrap();
+    }
 
     ws.on_error(|error| async move {
         eprintln!("[ERROR] {}", error);

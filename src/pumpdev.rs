@@ -26,6 +26,10 @@ pub struct Subscribed {
 }
 
 #[derive(Serialize, Debug)]
-pub struct PumpMsgSub {
-    pub method: String,
+#[serde(tag = "method", rename_all = "camelCase")]
+pub enum PumpSend {
+    SubscribeNewToken(SubscribeNewToken),
 }
+
+#[derive(Serialize, Debug)]
+pub struct SubscribeNewToken {}
