@@ -17,7 +17,7 @@ pub struct Connected {
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ConnectionStatus {
-    connected: bool,
+    pub connected: bool,
 }
 
 #[derive(Deserialize, Debug)]

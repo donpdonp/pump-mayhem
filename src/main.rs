@@ -38,6 +38,7 @@ async fn iomain(url: &str) -> Result<(), fast_websocket_client::WebSocketClientE
         );
     })
     .await;
+
     ws.on_message(|message| async move {
         println!("[MESSAGE] {} ", message);
         let msg: pumpdev::PumpMsg = serde_json::from_str(&message).unwrap();
@@ -48,8 +49,9 @@ async fn iomain(url: &str) -> Result<(), fast_websocket_client::WebSocketClientE
             pumpdev::PumpMsg::Subscribed(msg) => {
                 println!("{:?}", msg)
             }
-            pumpdev::PumpMsg::ConnectionStatus(msg) => {
-                println!("{:?}", msg)
+            pumpdev::PumpMsg::ConnectionStatus(m) => {
+                println!("{:?}", m);
+                if m.connected {}
             }
         }
     })
@@ -58,6 +60,7 @@ async fn iomain(url: &str) -> Result<(), fast_websocket_client::WebSocketClientE
         println!("[BINARY] {:?}", bytes);
     })
     .await;
+
     ws.on_error(|error| async move {
         eprintln!("[ERROR] {}", error);
     })
