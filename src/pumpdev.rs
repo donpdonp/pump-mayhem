@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Debug)]
 #[serde(tag = "type", rename_all = "camelCase")]
@@ -23,4 +23,9 @@ pub struct ConnectionStatus {
 #[derive(Deserialize, Debug)]
 pub struct Subscribed {
     method: String,
+}
+
+#[derive(Serialize, Debug)]
+pub struct PumpMsgSub {
+    pub method: String,
 }

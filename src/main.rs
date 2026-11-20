@@ -51,13 +51,14 @@ async fn iomain(url: &str) -> Result<(), fast_websocket_client::WebSocketClientE
             }
             pumpdev::PumpMsg::ConnectionStatus(m) => {
                 println!("{:?}", m);
-                if m.connected {}
+                if m.connected {
+                    let sub_msg = pumpdev::PumpMsgSub {
+                        method: "bob".to_owned(),
+                    };
+                    let json = serde_json::to_string(&sub_msg).unwrap();
+                }
             }
         }
-    })
-    .await;
-    ws.on_binary(|bytes| async move {
-        println!("[BINARY] {:?}", bytes);
     })
     .await;
 
