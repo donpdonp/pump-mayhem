@@ -62,6 +62,9 @@ async fn iomain(url: &str) -> Result<(), fast_websocket_client::WebSocketClientE
                             .unwrap();
                     }
                 }
+                pumpdev::PumpMsg::NewToken(msg) => {
+                    println!("{:?}", msg)
+                }
             }
         }
     })
