@@ -22,6 +22,31 @@ fn main() {
     let _ = iomain(url_str);
 }
 
+async fn process(msg: pumpdev::PumpMsg, tx: mpsc::UnboundedSender<pumpdev::PumpSend>) {
+    match msg {
+        pumpdev::PumpMsg::Connected(msg) => {
+            println!("{:?}", msg)
+        }
+        pumpdev::PumpMsg::Subscribed(msg) => {
+            println!("{:?}", msg)
+        }
+        pumpdev::PumpMsg::ConnectionStatus(m) => {
+            println!("{:?}", m);
+            if m.connected {
+                let sub_msg = pumpdev::SubscribeNewToken {};
+                tx.send(pumpdev::PumpSend::SubscribeNewToken(sub_msg))
+                    .unwrap();
+            }
+        }
+        pumpdev::PumpMsg::NewToken(msg) => {
+            println!("{:?}", msg)
+        }
+        pumpdev::PumpMsg::NewPool(msg) => {
+            println!("{:?}", msg)
+        }
+    }
+}
+
 #[tokio::main(flavor = "current_thread")]
 async fn iomain(url: &str) -> Result<(), fast_websocket_client::WebSocketClientError> {
     let ws = WebSocket::new(url).await?;
@@ -47,25 +72,7 @@ async fn iomain(url: &str) -> Result<(), fast_websocket_client::WebSocketClientE
         async move {
             println!("[MESSAGE] {} ", message);
             let msg: pumpdev::PumpMsg = serde_json::from_str(&message).unwrap();
-            match msg {
-                pumpdev::PumpMsg::Connected(msg) => {
-                    println!("{:?}", msg)
-                }
-                pumpdev::PumpMsg::Subscribed(msg) => {
-                    println!("{:?}", msg)
-                }
-                pumpdev::PumpMsg::ConnectionStatus(m) => {
-                    println!("{:?}", m);
-                    if m.connected {
-                        let sub_msg = pumpdev::SubscribeNewToken {};
-                        tx.send(pumpdev::PumpSend::SubscribeNewToken(sub_msg))
-                            .unwrap();
-                    }
-                }
-                pumpdev::PumpMsg::NewToken(msg) => {
-                    println!("{:?}", msg)
-                }
-            }
+            process(msg, tx).await;
         }
     })
     .await;

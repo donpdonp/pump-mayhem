@@ -7,6 +7,7 @@ pub enum PumpMsg {
     Connected(Connected),
     ConnectionStatus(ConnectionStatus),
     NewToken(NewToken),
+    NewPool(NewPool),
 }
 
 #[derive(Deserialize, Debug)]
@@ -54,6 +55,32 @@ pub struct NewToken {
     // pub v_sol_in_bonding_curve: i64,
     // pub sol_amount: f64,
     // pub market_cap_sol: f64,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct NewPool {
+    pub signature: String,
+    pub mint: String,
+    pub tx_type: String,
+    pub pool: String,
+    pub canonical_pool: String,
+    pub is_canonical_pool: bool,
+    pub creator: String,
+    pub trader_public_key: String,
+    pub base_mint: String,
+    pub pair_quote_mint: String,
+    pub source: String,
+    pub pool_base_reserves: i64,
+    pub pool_base_reserves_ui: f64,
+    pub pool_quote_reserves: i64,
+    pub pool_quote_reserves_ui: f64,
+    pub quote_mint: String,
+    pub quote_token_decimals: i32,
+    pub quote_amount: f64,
+    pub market_cap_quote: f64,
+    pub sol_amount: f64,
+    pub market_cap_sol: f64,
 }
 
 #[derive(Serialize, Debug)]
