@@ -66,13 +66,12 @@ async fn iomain(url: &str) -> Result<(), fast_websocket_client::WebSocketClientE
     })
     .await;
 
-    let msg_tx = tx.clone();
     ws.on_message(move |message| {
-        let tx = msg_tx.clone();
+        let tx2 = tx.clone();
         async move {
             println!("[MESSAGE] {} ", message);
             let msg: pumpdev::PumpMsg = serde_json::from_str(&message).unwrap();
-            process(msg, tx).await;
+            process(msg, tx2).await;
         }
     })
     .await;
